@@ -1,0 +1,68 @@
+name: hobiholiday
+
+services:
+  # frontend:
+  #   image: zed378/hobiholidays-fe:latest
+  #   container_name: frontend
+  #   restart: always
+  #   ports:
+  #     - 3232:3000
+  #   environment:
+  #     # - NEXT_PUBLIC_DATABASE_URL=https://backend.hobiholidays.my.id
+  #     - NEXT_PUBLIC_DATABASE_URL=backend:5000
+
+  postgresql:
+    image: postgres:17
+    container_name: postgresql
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data/pgdata
+    environment:
+      POSTGRES_PASSWORD: Evazed123!@#
+      POSTGRES_USER: hobiholiday
+      POSTGRES_DB: hobiholiday
+      PGDATA: /var/lib/postgresql/data/pgdata
+      TZ: Asia/Bangkok
+      PGTZ: Asia/Bangkok
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: zed@mail.com
+      PGADMIN_DEFAULT_PASSWORD: Evazed123!@#
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
+    depends_on:
+      - postgresql
+
+  # backend:
+  #   image: zed378/hobiholidays-be:latest
+  #   container_name: backend
+  #   restart: always
+  #   ports:
+  #     - 5000:5000
+  #   volumes:
+  #     - ./uploads:/app/uploads
+  #     - ./log:/app/log
+  #   environment:
+  #     PORT: 5000
+  #     SECRET: 425r6@!gHT26
+  #     FE_URL: http://localhost:3000/login
+  #     HOST_URL: http://localhost:5000
+  #     # DB Configuration
+  #     DB_PORT: 5432
+  #     DB_HOST: postgresql
+  #     DB_USER: hobiholiday
+  #     DB_PASS: Evazed123!@#
+  #     DB_NAME: hobiholiday
+  #     DB_DIALECT: postgres
+  #     BACKUP_SCHEDULER: "* * * * *"
+  #   depends_on:
+  #     - postgresql
+  #     - pgadmin

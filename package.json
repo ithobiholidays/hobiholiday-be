@@ -1,0 +1,54 @@
+{
+  "name": "hobiholiday-be",
+  "version": "1.0.0",
+  "description": "Hobiholiday backend service for prods",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zed378/hobiholiday-be.git"
+  },
+  "author": "zed378",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zed378/hobiholiday-be/issues"
+  },
+  "homepage": "https://github.com/zed378/hobiholiday-be#readme",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "date-and-time": "^3.6.0",
+    "dateformat": "^5.0.3",
+    "decode-html": "^2.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "fs-extra": "^11.3.0",
+    "helmet": "^8.0.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.1",
+    "moment-timezone": "^0.5.47",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "node-format-date": "^1.0.9",
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
+    "romanum": "^1.0.1",
+    "sanitize-html": "^2.14.0",
+    "sanitize-html-react": "^1.13.0",
+    "sequelize": "^6.37.5",
+    "uuid": "^13.0.0",
+    "winston": "^3.17.0",
+    "xss": "^1.0.15"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
