@@ -5,7 +5,7 @@ const { parseStringToArray } = require('../middleware/parseStringToArray');
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const { p, limit, month, year } = req.body;
+    const { p, limit, month, year, categoryId } = req.body;
     const { s, search } = req.query;
     const skip = p * limit - limit;
 
@@ -51,6 +51,7 @@ exports.getAllProducts = async (req, res) => {
           as: 'categories',
           attributes: ['name'],
           required: true,
+          ...(categoryId && { where: { id: categoryId } }),
         },
       ],
       where: whereClause,
