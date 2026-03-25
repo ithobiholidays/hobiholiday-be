@@ -1,5 +1,5 @@
 const { Products, Categories, ProductCategories } = require('../../models');
-const { Op } = require('sequelize');
+const { Op, literal } = require('sequelize');
 const { delImg, cloneImg } = require('../middleware/deleteImage');
 const { parseStringToArray } = require('../middleware/parseStringToArray');
 
@@ -32,7 +32,7 @@ exports.getAllProducts = async (req, res) => {
       attributes: {
         exclude: ['updatedAt'],
       },
-      order: [['createdAt', 'DESC']],
+      order: [['isSoldOut', 'ASC'], literal('"startDate" ASC NULLS LAST')],
       offset: skip,
       limit,
       include: [
@@ -100,7 +100,7 @@ exports.getProducts = async (req, res) => {
       attributes: {
         exclude: ['updatedAt'],
       },
-      order: [['createdAt', 'DESC']],
+      order: [['isSoldOut', 'ASC'], literal('"startDate" ASC NULLS LAST')],
       include: [
         {
           model: Categories,
@@ -173,10 +173,7 @@ exports.filteredProducts = async (req, res) => {
       attributes: {
         exclude: ['updatedAt'],
       },
-      order: [
-        ['isSoldOut', 'ASC'],
-        ['createdAt', 'DESC'],
-      ],
+      order: [['isSoldOut', 'ASC'], literal('"startDate" ASC NULLS LAST')],
       include: [
         {
           model: Categories,
@@ -251,10 +248,7 @@ exports.filteredPaginationProducts = async (req, res) => {
       attributes: {
         exclude: ['updatedAt'],
       },
-      order: [
-        ['isSoldOut', 'ASC'],
-        ['createdAt', 'DESC'],
-      ],
+      order: [['isSoldOut', 'ASC'], literal('"startDate" ASC NULLS LAST')],
       include: [
         {
           model: Categories,
@@ -360,6 +354,8 @@ exports.createProduct = async (req, res) => {
       label,
       description,
       categoryIds,
+      startDate,
+      endDate,
     } = req.body;
     const banner = req.files.banner[0].filename;
     const itenerary = req.files.itenerary[0].filename;
@@ -375,6 +371,8 @@ exports.createProduct = async (req, res) => {
       detail,
       label,
       itenerary,
+      startDate: startDate || null,
+      endDate: endDate || null,
       isActive: true,
       isSoldOut: false,
     });
@@ -413,6 +411,8 @@ exports.editProduct = async (req, res) => {
       label,
       description,
       categoryIds,
+      startDate,
+      endDate,
     } = req.body;
 
     const banner = req?.files?.banner?.[0]?.filename || null;
@@ -452,6 +452,8 @@ exports.editProduct = async (req, res) => {
         description,
         banner: banner || isProductExist.banner,
         itenerary: itenerary || isProductExist.itenerary,
+        startDate: startDate || isProductExist.startDate,
+        endDate: endDate || isProductExist.endDate,
       },
       { where: { id } }
     );
@@ -585,6 +587,8 @@ exports.cloneProduct = async (req, res) => {
       detail: isExist.detail,
       label: isExist.label,
       itenerary: newItenerary,
+      startDate: isExist.startDate,
+      endDate: isExist.endDate,
       isActive: true,
       isSoldOut: false,
     });
