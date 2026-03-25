@@ -5,7 +5,7 @@ const { parseStringToArray } = require('../middleware/parseStringToArray');
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const { p, limit } = req.body;
+    const { p, limit, month, year } = req.body;
     const { s, search } = req.query;
     const skip = p * limit - limit;
 
@@ -25,6 +25,15 @@ exports.getAllProducts = async (req, res) => {
 
     if (search) {
       whereClause.title = { [Op.iLike]: `%${search}%` };
+    }
+
+    if (month && year) {
+      whereClause[Op.and] = [
+        literal(`EXTRACT(MONTH FROM "startDate") = ${month}`),
+        literal(`EXTRACT(YEAR FROM "startDate") = ${year}`),
+      ];
+    } else if (year) {
+      whereClause[Op.and] = [literal(`EXTRACT(YEAR FROM "startDate") = ${year}`)];
     }
 
     await Products.findAndCountAll({
