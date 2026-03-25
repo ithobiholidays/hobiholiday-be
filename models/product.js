@@ -20,6 +20,8 @@ const Products = db.define(
     detail: { type: DataTypes.STRING },
     label: { type: DataTypes.STRING },
     description: { type: DataTypes.TEXT },
+    startDate: { type: DataTypes.DATEONLY, allowNull: true },
+    endDate: { type: DataTypes.DATEONLY, allowNull: true },
     isActive: { type: DataTypes.BOOLEAN, default: true },
     isSoldOut: { type: DataTypes.BOOLEAN, default: false },
     itenerary: { type: DataTypes.STRING },

@@ -173,7 +173,10 @@ exports.filteredProducts = async (req, res) => {
       attributes: {
         exclude: ['updatedAt'],
       },
-      order: [['createdAt', 'DESC']],
+      order: [
+        ['isSoldOut', 'ASC'],
+        ['createdAt', 'DESC'],
+      ],
       include: [
         {
           model: Categories,
@@ -248,7 +251,10 @@ exports.filteredPaginationProducts = async (req, res) => {
       attributes: {
         exclude: ['updatedAt'],
       },
-      order: [['createdAt', 'DESC']],
+      order: [
+        ['isSoldOut', 'ASC'],
+        ['createdAt', 'DESC'],
+      ],
       include: [
         {
           model: Categories,
