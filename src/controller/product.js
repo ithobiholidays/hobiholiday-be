@@ -224,7 +224,7 @@ exports.filteredProducts = async (req, res) => {
 
 exports.filteredPaginationProducts = async (req, res) => {
   try {
-    const { categoryIds, p, limit } = req.body;
+    const { categoryIds, p, limit, search, month, year } = req.body;
     const { s } = req.query;
     const skip = p * limit - limit;
 
@@ -242,16 +242,40 @@ exports.filteredPaginationProducts = async (req, res) => {
       whereClause.isActive = { [Op.in]: [true, false] };
     }
 
-    if (
-      !categoryIds ||
-      !Array.isArray(categoryIds) ||
-      categoryIds.length === 0
-    ) {
+    const hasCategoryFilter = categoryIds && Array.isArray(categoryIds) && categoryIds.length > 0;
+
+    // Wajib ada categoryIds ATAU minimal salah satu filter (search/month/year)
+    if (!hasCategoryFilter && !search && !month && !year) {
       return res.status(400).send({
         status: 'Failed',
         message: 'categoryIds must be a non-empty array',
       });
     }
+
+    // Search filter
+    if (search) {
+      whereClause.title = { [Op.iLike]: `%${search}%` };
+    }
+
+    // Month/year filter
+    if (month && year) {
+      whereClause[Op.and] = [
+        literal(`EXTRACT(MONTH FROM "startDate") = ${month}`),
+        literal(`EXTRACT(YEAR FROM "startDate") = ${year}`),
+      ];
+    } else if (month) {
+      whereClause[Op.and] = [literal(`EXTRACT(MONTH FROM "startDate") = ${month}`)];
+    } else if (year) {
+      whereClause[Op.and] = [literal(`EXTRACT(YEAR FROM "startDate") = ${year}`)];
+    }
+
+    const categoryInclude = {
+      model: Categories,
+      through: ProductCategories,
+      as: 'categories',
+      attributes: ['name'],
+      ...(hasCategoryFilter && { where: { id: { [Op.in]: categoryIds } } }),
+    };
 
     await Products.findAndCountAll({
       distinct: true,
@@ -259,15 +283,7 @@ exports.filteredPaginationProducts = async (req, res) => {
         exclude: ['updatedAt'],
       },
       order: [['isSoldOut', 'ASC'], literal('"startDate" ASC NULLS LAST')],
-      include: [
-        {
-          model: Categories,
-          through: ProductCategories,
-          as: 'categories',
-          attributes: ['name'],
-          where: { id: { [Op.in]: categoryIds } },
-        },
-      ],
+      include: [categoryInclude],
       offset: skip,
       limit,
       where: whereClause,
