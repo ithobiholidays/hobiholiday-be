@@ -14,6 +14,8 @@ const {
   deleteproduct,
   updateProductStatus,
   updateProductSoldStatus,
+  bulkUpdateStatus,
+  bulkUpdateSoldStatus,
   cloneProduct,
 } = require('../controller/product');
 
@@ -27,6 +29,8 @@ router.patch('/edit', auth, multiUpload, editProduct);
 router.delete('/:id', auth, deleteproduct);
 router.post('/status', auth, updateProductStatus);
 router.post('/is-sold', auth, updateProductSoldStatus);
+router.post('/bulk-status', auth, bulkUpdateStatus);
+router.post('/bulk-sold', auth, bulkUpdateSoldStatus);
 router.post('/clone', auth, cloneProduct);
 
 module.exports = router;

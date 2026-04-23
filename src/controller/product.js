@@ -586,6 +586,76 @@ exports.updateProductSoldStatus = async (req, res) => {
   }
 };
 
+exports.bulkUpdateStatus = async (req, res) => {
+  try {
+    const { ids, status } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).send({
+        status: 'Failed',
+        message: 'ids must be a non-empty array',
+      });
+    }
+
+    if (typeof status !== 'boolean') {
+      return res.status(400).send({
+        status: 'Failed',
+        message: 'status must be a boolean',
+      });
+    }
+
+    await Products.update(
+      { isActive: status },
+      { where: { id: { [Op.in]: ids } } }
+    );
+
+    res.status(200).send({
+      status: 'Success',
+      message: `Successfully updated status for ${ids.length} product(s)`,
+    });
+  } catch (error) {
+    res.status(400).send({
+      status: 'Failed',
+      message: error.message,
+    });
+  }
+};
+
+exports.bulkUpdateSoldStatus = async (req, res) => {
+  try {
+    const { ids, status } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).send({
+        status: 'Failed',
+        message: 'ids must be a non-empty array',
+      });
+    }
+
+    if (typeof status !== 'boolean') {
+      return res.status(400).send({
+        status: 'Failed',
+        message: 'status must be a boolean',
+      });
+    }
+
+    await Products.update(
+      { isSoldOut: status },
+      { where: { id: { [Op.in]: ids } } }
+    );
+
+    res.status(200).send({
+      status: 'Success',
+      message: `Successfully updated sold status for ${ids.length} product(s)`,
+    });
+  } catch (error) {
+    res.status(400).send({
+      status: 'Failed',
+      message: error.message,
+    });
+  }
+};
+
 exports.cloneProduct = async (req, res) => {
   try {
     const { id } = req.body;
