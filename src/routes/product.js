@@ -17,12 +17,14 @@ const {
   bulkUpdateStatus,
   bulkUpdateSoldStatus,
   cloneProduct,
+  getEndpointsByCategory, 
 } = require('../controller/product');
 
 router.post('/alls', getAllProducts);
 router.get('/all', getProducts);
 router.post('/filtered', filteredProducts);
 router.post('/filtered-limit', filteredPaginationProducts);
+router.get('/export-endpoints', getEndpointsByCategory);
 router.get('/:id', getProduct);
 router.post('/add', auth, multiUpload, createProduct);
 router.patch('/edit', auth, multiUpload, editProduct);

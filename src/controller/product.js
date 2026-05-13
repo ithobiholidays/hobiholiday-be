@@ -3,6 +3,59 @@ const { Op, literal } = require('sequelize');
 const { delImg, cloneImg } = require('../middleware/deleteImage');
 const { parseStringToArray } = require('../middleware/parseStringToArray');
 
+exports.getEndpointsByCategory = async (req, res) => {
+  try {
+    const products = await Products.findAll({
+      attributes: ['id', 'title', 'startDate', 'endDate', 'isSoldOut'],
+      where: {
+        isActive: true,
+        startDate: {
+          [Op.between]: ['2026-06-01', '2027-12-31'],
+        },
+      },
+      order: [literal('"startDate" ASC NULLS LAST')],
+      include: [
+        {
+          model: Categories,
+          through: ProductCategories,
+          as: 'categories',
+          attributes: ['name'],
+        },
+      ],
+    });
+
+    const grouped = {};
+
+    products.forEach((item) => {
+      const categories = item.categories.map((c) => c.name);
+      const categoryLabel = categories.length > 0 ? categories.join(', ') : 'UNCATEGORIZED';
+
+      const entry = {
+        endpoint: `GET /product/${item.id}`,
+        title: item.title,
+        startDate: item.startDate,
+        endDate: item.endDate,
+        isSoldOut: item.isSoldOut,
+      };
+
+      if (!grouped[categoryLabel]) {
+        grouped[categoryLabel] = [];
+      }
+      grouped[categoryLabel].push(entry);
+    });
+
+    res.status(200).send({
+      status: 'Success',
+      data: grouped,
+    });
+  } catch (error) {
+    res.status(400).send({
+      status: 'Failed',
+      message: error.message,
+    });
+  }
+};
+
 exports.getAllProducts = async (req, res) => {
   try {
     const { p, limit, month, year, categoryId } = req.body;
