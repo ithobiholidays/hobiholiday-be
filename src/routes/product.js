@@ -18,6 +18,8 @@ const {
   bulkUpdateSoldStatus,
   cloneProduct,
   getEndpointsByCategory, 
+  getMappingProducts,
+  updateInputtedStatus,
 } = require('../controller/product');
 
 router.post('/alls', getAllProducts);
@@ -34,5 +36,7 @@ router.post('/is-sold', auth, updateProductSoldStatus);
 router.post('/bulk-status', auth, bulkUpdateStatus);
 router.post('/bulk-sold', auth, bulkUpdateSoldStatus);
 router.post('/clone', auth, cloneProduct);
+router.post('/mapping', auth, getMappingProducts);
+router.post('/inputted', auth, updateInputtedStatus);
 
 module.exports = router;

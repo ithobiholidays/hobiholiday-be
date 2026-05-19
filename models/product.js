@@ -24,6 +24,8 @@ const Products = db.define(
     endDate: { type: DataTypes.DATEONLY, allowNull: true },
     isActive: { type: DataTypes.BOOLEAN, default: true },
     isSoldOut: { type: DataTypes.BOOLEAN, default: false },
+    product_code: { type: DataTypes.STRING, allowNull: true, unique: true },
+    isInputted: { type: DataTypes.BOOLEAN, defaultValue: false },
     itenerary: { type: DataTypes.STRING },
     createdAt: {
       type: DataTypes.DATE,

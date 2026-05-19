@@ -3,10 +3,23 @@ const { Op, literal } = require('sequelize');
 const { delImg, cloneImg } = require('../middleware/deleteImage');
 const { parseStringToArray } = require('../middleware/parseStringToArray');
 
+const generateProductCode = async () => {
+  const last = await Products.findOne({
+    where: { product_code: { [Op.like]: 'HH-%' } },
+    order: [['product_code', 'DESC']],
+    attributes: ['product_code'],
+  });
+
+  if (!last || !last.product_code) return 'HH-000001';
+
+  const num = parseInt(last.product_code.replace('HH-', ''), 10);
+  return `HH-${String(num + 1).padStart(6, '0')}`;
+};
+
 exports.getEndpointsByCategory = async (req, res) => {
   try {
     const products = await Products.findAll({
-      attributes: ['id', 'title', 'startDate', 'endDate', 'isSoldOut'],
+      attributes: ['id', 'title', 'startDate', 'endDate', 'isSoldOut', 'product_code'],
       where: {
         isActive: true,
         startDate: {
@@ -32,6 +45,7 @@ exports.getEndpointsByCategory = async (req, res) => {
 
       const entry = {
         endpoint: `GET /product/${item.id}`,
+        product_code: item.product_code || null,
         title: item.title,
         startDate: item.startDate,
         endDate: item.endDate,
@@ -438,7 +452,7 @@ exports.createProduct = async (req, res) => {
     } = req.body;
     const banner = req.files.banner[0].filename;
     const itenerary = req.files.itenerary[0].filename;
-
+    const product_code = await generateProductCode();
     const product = await Products.create({
       title,
       price,
@@ -454,6 +468,7 @@ exports.createProduct = async (req, res) => {
       endDate: endDate || null,
       isActive: true,
       isSoldOut: false,
+      product_code,
     });
 
     if (categoryIds) {
@@ -714,7 +729,7 @@ exports.cloneProduct = async (req, res) => {
     const { id } = req.body;
 
     const isExist = await Products.findOne({ where: { id } });
-
+    const product_code = await generateProductCode();
     if (!isExist) {
       return res.status(404).send({
         status: 'Failed',
@@ -740,6 +755,7 @@ exports.cloneProduct = async (req, res) => {
       endDate: isExist.endDate,
       isActive: true,
       isSoldOut: false,
+      product_code,
     });
 
     const existingProductCategories = await ProductCategories.findAll({
@@ -767,5 +783,71 @@ exports.cloneProduct = async (req, res) => {
       status: 'Failed',
       message: error.message,
     });
+  }
+};
+
+exports.getMappingProducts = async (req, res) => {
+  try {
+    const { p, limit, month, year, categoryId, search, isActive, isSoldOut, hasCode, isInputted } = req.body;
+    const skip = p * limit - limit;
+
+    let whereClause = {};
+
+    if (isActive === true || isActive === false) whereClause.isActive = isActive;
+    if (isSoldOut === true || isSoldOut === false) whereClause.isSoldOut = isSoldOut;
+    if (isInputted === true || isInputted === false) whereClause.isInputted = isInputted;
+    if (hasCode === true) whereClause.product_code = { [Op.ne]: null };
+    if (hasCode === false) whereClause.product_code = null;
+    if (search) whereClause.title = { [Op.iLike]: `%${search}%` };
+
+    if (month && year) {
+      whereClause[Op.and] = [
+        literal(`EXTRACT(MONTH FROM "startDate") = ${month}`),
+        literal(`EXTRACT(YEAR FROM "startDate") = ${year}`),
+      ];
+    } else if (month) {
+      whereClause[Op.and] = [literal(`EXTRACT(MONTH FROM "startDate") = ${month}`)];
+    } else if (year) {
+      whereClause[Op.and] = [literal(`EXTRACT(YEAR FROM "startDate") = ${year}`)];
+    }
+
+    const result = await Products.findAndCountAll({
+      distinct: true,
+      attributes: ['id', 'title', 'product_code', 'isActive', 'isSoldOut', 'isInputted', 'startDate', 'endDate'],
+      order: [['isSoldOut', 'ASC'], literal('"startDate" ASC NULLS LAST')],
+      offset: skip,
+      limit,
+      include: [
+        {
+          model: Categories,
+          through: ProductCategories,
+          as: 'categories',
+          attributes: ['id', 'name'],
+          ...(categoryId && { where: { id: categoryId } }),
+          required: !!categoryId,
+        },
+      ],
+      where: whereClause,
+    });
+
+    const data = result.rows.map((item) => ({
+      ...item.dataValues,
+      endpoint: `GET /product/${item.id}`,
+      categories: item.categories.map((c) => c.name),
+    }));
+
+    res.status(200).send({ status: 'Success', total: result.count, data });
+  } catch (error) {
+    res.status(400).send({ status: 'Failed', message: error.message });
+  }
+};
+
+exports.updateInputtedStatus = async (req, res) => {
+  try {
+    const { id, status } = req.body;
+    await Products.update({ isInputted: status }, { where: { id } });
+    res.status(200).send({ status: 'Success', message: 'Success update inputted status' });
+  } catch (error) {
+    res.status(400).send({ status: 'Failed', message: error.message });
   }
 };
