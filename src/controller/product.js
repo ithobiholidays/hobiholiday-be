@@ -851,3 +851,39 @@ exports.updateInputtedStatus = async (req, res) => {
     res.status(400).send({ status: 'Failed', message: error.message });
   }
 };
+
+exports.generateAllMissingCodes = async (req, res) => {
+  try {
+    const products = await Products.findAll({
+      where: { product_code: null },
+      attributes: ['id'],
+      order: [['createdAt', 'ASC']], // urut dari yang paling lama
+    });
+
+    if (products.length === 0) {
+      return res.status(200).send({
+        status: 'Success',
+        message: 'Semua produk sudah punya kode',
+        updated: 0,
+      });
+    }
+
+    let updated = 0;
+    for (const product of products) {
+      const code = await generateProductCode();
+      await Products.update(
+        { product_code: code },
+        { where: { id: product.id } }
+      );
+      updated++;
+    }
+
+    res.status(200).send({
+      status: 'Success',
+      message: `Berhasil generate ${updated} product code`,
+      updated,
+    });
+  } catch (error) {
+    res.status(400).send({ status: 'Failed', message: error.message });
+  }
+};
