@@ -887,3 +887,76 @@ exports.generateAllMissingCodes = async (req, res) => {
     res.status(400).send({ status: 'Failed', message: error.message });
   }
 };
+
+exports.getProductsByCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const category = await Categories.findOne({
+      where: { id },
+      attributes: ['id', 'name'],
+    });
+
+    if (!category) {
+      return res.status(404).send({
+        status: 'Failed',
+        message: 'Category not found',
+      });
+    }
+
+    const products = await Products.findAll({
+      attributes: ['id', 'product_code', 'title', 'startDate', 'endDate', 'isSoldOut', 'price', 'discPrice'],
+      where: { isActive: true },
+      order: [['isSoldOut', 'ASC'], literal('"startDate" ASC NULLS LAST')],
+      include: [
+        {
+          model: Categories,
+          through: ProductCategories,
+          as: 'categories',
+          attributes: [],
+          where: { id },
+          required: true,
+        },
+      ],
+    });
+
+    const data = products.map((item) => ({
+      product_code: item.product_code || null,
+      title: item.title,
+      startDate: item.startDate,
+      endDate: item.endDate,
+      isSoldOut: item.isSoldOut,
+      price: item.price,
+      discPrice: item.discPrice,
+      endpoint: `GET /product/${item.id}`,
+    }));
+
+    res.status(200).send({
+      status: 'Success',
+      category: category.name,
+      total: data.length,
+      data,
+    });
+  } catch (error) {
+    res.status(400).send({ status: 'Failed', message: error.message });
+  }
+};
+
+exports.getCategoryEndpoints = async (req, res) => {
+  try {
+    const categories = await Categories.findAll({
+      attributes: ['id', 'name', 'order'],
+      order: [['order', 'ASC']],
+    });
+
+    const data = categories.map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+      endpoint: `GET /product/category/${cat.id}`,
+    }));
+
+    res.status(200).send({ status: 'Success', data });
+  } catch (error) {
+    res.status(400).send({ status: 'Failed', message: error.message });
+  }
+};

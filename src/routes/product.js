@@ -21,6 +21,8 @@ const {
   getMappingProducts,
   updateInputtedStatus,
   generateAllMissingCodes,
+  getProductsByCategory,
+  getCategoryEndpoints,
 } = require('../controller/product');
 
 router.post('/alls', getAllProducts);
@@ -40,4 +42,6 @@ router.post('/clone', auth, cloneProduct);
 router.post('/mapping', auth, getMappingProducts);
 router.post('/inputted', auth, updateInputtedStatus);
 router.post('/generate-all-codes', auth, generateAllMissingCodes);
+router.get('/category-endpoints', getCategoryEndpoints);
+router.get('/category/:id', getProductsByCategory);
 module.exports = router;
