@@ -42,7 +42,7 @@ router.post('/bulk-status', auth, bulkUpdateStatus);
 router.post('/bulk-sold', auth, bulkUpdateSoldStatus);
 router.post('/clone', auth, cloneProduct);
 router.post('/mapping', auth, getMappingProducts);
-router.post('/inputted', auth, updateInputtedStatus);
+router.patch('/inputted', auth, updateInputtedStatus);
 router.post('/generate-all-codes', auth, generateAllMissingCodes);
 router.get('/category-endpoints', getCategoryEndpoints);
 router.get('/category/:id', getProductsByCategory);
