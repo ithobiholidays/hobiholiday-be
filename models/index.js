@@ -12,6 +12,7 @@ const { Testimony } = require("./testimony");
 const { Team } = require("./team");
 const { Reward } = require("./reward");
 const { Session } = require("./session");
+const { CustomerLead } = require("./customer_lead");
 
 CV.belongsTo(JobPosition, {
   foreignKey: "positionId",
@@ -72,4 +73,5 @@ module.exports = {
   Team,
   Reward,
   Session,
+  CustomerLead,
 };

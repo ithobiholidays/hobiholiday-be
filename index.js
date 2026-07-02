@@ -58,6 +58,7 @@ const testimoniesRoutes = require("./src/routes/testimony");
 const teamRoutes = require("./src/routes/team");
 const rewardRoutes = require("./src/routes/reward");
 const dashboardRoutes = require("./src/routes/dashboard");
+const customerLeadRoutes = require("./src/routes/customer_lead");
 
 // Endpoint
 app.use("/auth", authRoute);
@@ -73,6 +74,7 @@ app.use("/testi", testimoniesRoutes);
 app.use("/team", teamRoutes);
 app.use("/reward", rewardRoutes);
 app.use("/dashboard", dashboardRoutes);
+app.use("/customer-lead", customerLeadRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).send({
