@@ -1,4 +1,5 @@
 const { CustomerLead } = require("../../models");
+const { Op } = require("sequelize");
 
 exports.createCustomerLead = async (req, res) => {
   try {
@@ -56,6 +57,77 @@ exports.getAllCustomerLeads = async (req, res) => {
       status: "Success",
       total: result.count,
       data: result.rows,
+    });
+  } catch (error) {
+    res.status(400).send({
+      status: "Failed",
+      message: error.message,
+    });
+  }
+};
+
+exports.exportCustomerLeads = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.body;
+
+    if (!startDate || !endDate) {
+      return res.status(400).send({
+        status: "Failed",
+        message: "Tanggal mulai dan tanggal akhir wajib diisi",
+      });
+    }
+
+    // Range inklusif: 00:00:00 tanggal mulai s/d 23:59:59 tanggal akhir
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    if (start > end) {
+      return res.status(400).send({
+        status: "Failed",
+        message: "Tanggal mulai tidak boleh melebihi tanggal akhir",
+      });
+    }
+
+    const result = await CustomerLead.findAll({
+      attributes: { exclude: ["updatedAt"] },
+      where: {
+        createdAt: { [Op.between]: [start, end] },
+      },
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).send({
+      status: "Success",
+      total: result.length,
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).send({
+      status: "Failed",
+      message: error.message,
+    });
+  }
+};
+
+exports.deleteCustomerLead = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const lead = await CustomerLead.findByPk(id);
+    if (!lead) {
+      return res.status(404).send({
+        status: "Failed",
+        message: "Data tidak ditemukan",
+      });
+    }
+
+    await lead.destroy();
+
+    res.status(200).send({
+      status: "Success",
+      message: "Lead berhasil dihapus",
     });
   } catch (error) {
     res.status(400).send({
