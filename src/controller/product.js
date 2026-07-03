@@ -311,8 +311,18 @@ exports.filteredPaginationProducts = async (req, res) => {
 
     const hasCategoryFilter = categoryIds && Array.isArray(categoryIds) && categoryIds.length > 0;
 
+    // Normalisasi month/year: dukung nilai tunggal atau array (multi-select)
+    const toIntList = (val) => {
+      const arr = Array.isArray(val) ? val : val !== undefined && val !== null && val !== '' ? [val] : [];
+      return arr.map((v) => parseInt(v, 10)).filter((n) => !isNaN(n));
+    };
+    const monthList = toIntList(month);
+    const yearList = toIntList(year);
+    const hasMonth = monthList.length > 0;
+    const hasYear = yearList.length > 0;
+
     // Wajib ada categoryIds ATAU minimal salah satu filter (search/month/year)
-    if (!hasCategoryFilter && !search && !month && !year) {
+    if (!hasCategoryFilter && !search && !hasMonth && !hasYear) {
       return res.status(400).send({
         status: 'Failed',
         message: 'categoryIds must be a non-empty array',
@@ -324,16 +334,20 @@ exports.filteredPaginationProducts = async (req, res) => {
       whereClause.title = { [Op.iLike]: `%${search}%` };
     }
 
-    // Month/year filter
-    if (month && year) {
-      whereClause[Op.and] = [
-        literal(`EXTRACT(MONTH FROM "startDate") = ${month}`),
-        literal(`EXTRACT(YEAR FROM "startDate") = ${year}`),
-      ];
-    } else if (month) {
-      whereClause[Op.and] = [literal(`EXTRACT(MONTH FROM "startDate") = ${month}`)];
-    } else if (year) {
-      whereClause[Op.and] = [literal(`EXTRACT(YEAR FROM "startDate") = ${year}`)];
+    // Month/year filter (mendukung banyak nilai via IN)
+    const andConditions = [];
+    if (hasMonth) {
+      andConditions.push(
+        literal(`EXTRACT(MONTH FROM "startDate") IN (${monthList.join(',')})`)
+      );
+    }
+    if (hasYear) {
+      andConditions.push(
+        literal(`EXTRACT(YEAR FROM "startDate") IN (${yearList.join(',')})`)
+      );
+    }
+    if (andConditions.length > 0) {
+      whereClause[Op.and] = andConditions;
     }
 
     const categoryInclude = {
