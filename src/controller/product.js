@@ -802,7 +802,7 @@ exports.cloneProduct = async (req, res) => {
 
 exports.getMappingProducts = async (req, res) => {
   try {
-    const { p, limit, month, year, categoryId, search, isActive, isSoldOut, hasCode, isInputted } = req.body;
+    const { p, limit, month, year, categoryId, search, isActive, isSoldOut, hasCode, isInputted, isCekat } = req.body;
     const skip = p * limit - limit;
 
     let whereClause = {};
@@ -810,6 +810,7 @@ exports.getMappingProducts = async (req, res) => {
     if (isActive === true || isActive === false) whereClause.isActive = isActive;
     if (isSoldOut === true || isSoldOut === false) whereClause.isSoldOut = isSoldOut;
     if (isInputted === true || isInputted === false) whereClause.isInputted = isInputted;
+    if (isCekat === true || isCekat === false) whereClause.isCekat = isCekat;
     if (hasCode === true) whereClause.product_code = { [Op.ne]: null };
     if (hasCode === false) whereClause.product_code = null;
     if (search) whereClause.title = { [Op.iLike]: `%${search}%` };
@@ -827,7 +828,7 @@ exports.getMappingProducts = async (req, res) => {
 
     const result = await Products.findAndCountAll({
       distinct: true,
-      attributes: ['id', 'title', 'product_code', 'isActive', 'isSoldOut', 'isInputted', 'startDate', 'endDate'],
+      attributes: ['id', 'title', 'product_code', 'isActive', 'isSoldOut', 'isInputted', 'isCekat', 'startDate', 'endDate'],
       order: [['isSoldOut', 'ASC'], literal('"startDate" ASC NULLS LAST')],
       offset: skip,
       limit,
@@ -861,6 +862,16 @@ exports.updateInputtedStatus = async (req, res) => {
     const { id, status } = req.body;
     await Products.update({ isInputted: status }, { where: { id } });
     res.status(200).send({ status: 'Success', message: 'Success update inputted status' });
+  } catch (error) {
+    res.status(400).send({ status: 'Failed', message: error.message });
+  }
+};
+
+exports.updateCekatStatus = async (req, res) => {
+  try {
+    const { id, status } = req.body;
+    await Products.update({ isCekat: status }, { where: { id } });
+    res.status(200).send({ status: 'Success', message: 'Success update cekat status' });
   } catch (error) {
     res.status(400).send({ status: 'Failed', message: error.message });
   }
