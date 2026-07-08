@@ -20,6 +20,7 @@ const {
   getEndpointsByCategory, 
   getMappingProducts,
   updateInputtedStatus,
+  updateCekatStatus,
   generateAllMissingCodes,
   getProductsByCategory,
   getCategoryEndpoints,
@@ -43,6 +44,7 @@ router.post('/bulk-sold', auth, bulkUpdateSoldStatus);
 router.post('/clone', auth, cloneProduct);
 router.post('/mapping', auth, getMappingProducts);
 router.patch('/inputted', auth, updateInputtedStatus);
+router.patch('/cekat', auth, updateCekatStatus);
 router.post('/generate-all-codes', auth, generateAllMissingCodes);
 router.get('/category-endpoints', getCategoryEndpoints);
 router.get('/category/:id', getProductsByCategory);
