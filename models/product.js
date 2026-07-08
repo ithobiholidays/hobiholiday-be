@@ -26,6 +26,7 @@ const Products = db.define(
     isSoldOut: { type: DataTypes.BOOLEAN, default: false },
     product_code: { type: DataTypes.STRING, allowNull: true, unique: true },
     isInputted: { type: DataTypes.BOOLEAN, defaultValue: false },
+    isCekat: { type: DataTypes.BOOLEAN, defaultValue: false },
     itenerary: { type: DataTypes.STRING },
     createdAt: {
       type: DataTypes.DATE,
