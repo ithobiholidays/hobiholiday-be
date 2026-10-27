@@ -107,7 +107,7 @@ app.use((err, req, res, next) => {
 });
 
 Connection();
-cronBackup();
+// cronBackup(); // Dinonaktifkan untuk mencegah penumpukan file backup dan log temporary di disk
 publishScheduledPosts();
 deleteExpiredSessions();
 const port = process.env.PORT;
